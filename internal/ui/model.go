@@ -68,6 +68,7 @@ type Model struct {
 	height       int
 	hideReviewed bool
 	items        []item
+	notice       string
 	opts         Options
 	output       viewport.Model
 	quiz         quizState
@@ -78,6 +79,8 @@ type Model struct {
 	textarea     textarea.Model
 	viewport     viewport.Model
 	width        int
+	// zoom shows the detail pane full-width so mouse selection doesn't pick up the list.
+	zoom bool
 }
 
 func New(opts Options) Model {
@@ -194,8 +197,10 @@ func (m *Model) finishQuiz() {
 
 func (m *Model) layout() {
 	h := m.bodyHeight()
-	left := m.listWidth()
-	m.viewport.Width = max(10, m.width-left-2)
+	m.viewport.Width = max(10, m.width-m.listWidth()-2)
+	if m.zoom {
+		m.viewport.Width = m.width
+	}
 	m.viewport.Height = h
 	m.output.Width = m.width
 	m.output.Height = h
@@ -307,9 +312,30 @@ func (m *Model) selectKey(key string) {
 
 func (m Model) updateBrowse(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	vis := m.visible()
+	m.notice = ""
 	switch msg.String() {
 	case "q":
 		return m, tea.Quit
+	case "enter", "z":
+		m.zoom = !m.zoom
+		m.layout()
+		return m, nil
+	case "esc":
+		if m.zoom {
+			m.zoom = false
+			m.layout()
+		}
+		return m, nil
+	case "y", "Y":
+		if it := m.current(); it != nil {
+			withDiff := msg.String() == "Y"
+			copyToClipboard(findingMarkdown(*it, withDiff))
+			m.notice = "copied finding to clipboard"
+			if withDiff {
+				m.notice = "copied finding + diff to clipboard"
+			}
+		}
+		return m, nil
 	case "j", "down":
 		m.selected = clamp(m.selected+1, 0, len(vis)-1)
 	case "k", "up":

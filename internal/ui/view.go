@@ -46,6 +46,9 @@ func (m Model) View() string {
 }
 
 func (m Model) renderBrowse() string {
+	if m.zoom {
+		return m.viewport.View()
+	}
 	h := m.bodyHeight()
 	w := m.listWidth()
 	vis := m.visible()
@@ -132,6 +135,8 @@ func (m Model) renderFooter() string {
 		s = m.spinner.View() + " " + busyStyle.Render(m.busy)
 	case m.errMsg != "":
 		s = errStyle.Render(m.errMsg)
+	case m.notice != "":
+		s = addStyle.Render(m.notice)
 	default:
 		s = dimStyle.Render(m.help())
 	}
@@ -217,7 +222,10 @@ func (m Model) help() string {
 	case screenConfirmFix:
 		return "y fix · n cancel"
 	}
-	return "j/k move · space reviewed · t quiz me · f fix · tab sort · H hide reviewed · J/K ctrl+d/u scroll diff · r re-rank · R reload · q quit   (~ = heuristic score)"
+	if m.zoom {
+		return "j/k next/prev hunk · y copy finding · Y copy + diff · J/K ctrl+d/u scroll · enter/esc back to list"
+	}
+	return "j/k move · space reviewed · y/Y copy · enter zoom · t quiz me · f fix · tab sort · H hide reviewed · J/K ctrl+d/u scroll · r re-rank · R reload · q quit   (~ = heuristic)"
 }
 
 func scoreStyle(v float64) lipgloss.Style {

@@ -32,6 +32,8 @@ pr-triage -no-agent               # heuristics only, no quiz or fix
 | --- | --- |
 | `j`/`k` | move |
 | `space` | toggle reviewed |
+| `y` / `Y` | copy the finding as markdown / the finding plus its diff |
+| `enter` (or `z`) | full-width detail view, for clean mouse selection; `enter`/`esc` goes back |
 | `t` | quiz me on this hunk (`ctrl+s` submits, `enter` goes to the next question) |
 | `f` | let the agent fix this finding (asks first; runs with `--force`) |
 | `tab` | cycle sort: score, risk, immovable, regret, file |
